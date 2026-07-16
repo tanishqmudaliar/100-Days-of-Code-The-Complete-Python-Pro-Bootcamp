@@ -1,0 +1,28 @@
+from turtle import Turtle, Screen
+
+timmy = Turtle()
+screen = Screen()
+
+timmy.shape("turtle")
+timmy.forward(10)
+timmy.teleport(20)
+timmy.forward(10)
+timmy.teleport(40)
+timmy.forward(10)
+timmy.teleport(60)
+timmy.forward(10)
+timmy.teleport(80)
+timmy.forward(10)
+timmy.teleport(100)
+timmy.forward(10)
+timmy.teleport(120)
+timmy.forward(10)
+timmy.teleport(140)
+timmy.forward(10)
+timmy.teleport(160)
+timmy.forward(10)
+timmy.teleport(180)
+timmy.forward(10)
+timmy.teleport(200)
+
+screen.exitonclick()
