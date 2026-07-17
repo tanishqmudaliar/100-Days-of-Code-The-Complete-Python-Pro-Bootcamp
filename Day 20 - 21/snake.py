@@ -50,3 +50,10 @@ class Snake:
 
         self.snakes[0].forward(20)
         self.head = self.snakes[0]
+
+    def reset(self):
+        for seg in self.snakes:
+            seg.goto(1000, 1000)
+        self.snakes.clear()
+        self.snake(self.position)
+        self.head = self.snakes[0]
