@@ -1,4 +1,3 @@
-from datetime import time
 from turtle import Turtle, Screen
 
 timmy = Turtle()
