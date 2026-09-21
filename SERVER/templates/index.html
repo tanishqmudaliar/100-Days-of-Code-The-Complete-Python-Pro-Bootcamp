@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="hero">
+  <p class="eyebrow">Python portfolio</p>
+  <h1>Projects you can try</h1>
+  <p class="muted">These projects run from the browser using the same Python files in this repository. Desktop-only projects are intentionally hidden.</p>
+</div>
+<div class="grid">
+{% for project in projects %}
+  <article>
+    <h2>{{ project.guide.get("title", project.name) if project.guide else project.name }}</h2>
+    <p>{{ project.guide.get("description", "Interactive Python project.") if project.guide else "Interactive Python project." }}</p>
+    <span class="tag">Runnable locally</span>
+    <p><a class="button" href="{{ url_for('project_page', slug=project.slug) }}">Open project</a></p>
+  </article>
+{% endfor %}
+</div>
+{% endblock %}

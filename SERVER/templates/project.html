@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<p><a class="back-link" href="{{ url_for('index') }}">&larr; All projects</a></p>
+<p class="eyebrow">Interactive project</p>
+<h1>{{ guide.get("title", project.name) }}</h1>
+<p>{{ guide.get("description", "") }}</p>
+<p class="muted">Entry point: {{ project.entrypoint.relative_to(project.path).as_posix() if project.entrypoint else "none" }}</p>
+<div class="actions"><a class="button" href="{{ github_url }}" target="_blank" rel="noopener">View folder on GitHub</a></div>
+<p class="muted">{{ guide.get("instructions", "") }}</p>
+<div class="terminal">
+  <div class="terminal-bar"><span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span><span>project terminal</span></div>
+  <pre class="{{ 'success' if waiting else 'failure' }}">{{ output }}</pre>
+  {% if waiting %}
+  <form method="post" class="terminal-form">
+    <input name="input" autocomplete="off" autofocus required placeholder="Type the response to the prompt above">
+    <input type="hidden" name="session_id" value="{{ session_id }}">
+    <button type="submit">Send</button>
+  </form>
+  {% else %}
+  <div class="terminal-form"><span class="muted">Process finished. Refresh to run it again.</span></div>
+  {% endif %}
+</div>
+{% endblock %}

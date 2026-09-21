@@ -30,6 +30,16 @@ personalized letter in the browser. The repository files are never changed.
 Days 18–23 are omitted because their projects require desktop windows or
 keyboard-controlled GUI loops.
 
+## Server structure
+
+- `app.py` contains the Flask routes and application entrypoint.
+- `config.py` contains exclusions, guides, and runtime settings.
+- `discovery.py` finds folders and classifies runnable projects.
+- `sessions.py` manages terminal-style subprocess sessions.
+- `models.py` defines the project data model.
+- `templates/` contains the HTML pages and `static/style.css` contains the
+  shared GitHub-inspired styling.
+
 ## PythonAnywhere setup
 
 1. Upload/clone this repository.

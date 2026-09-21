@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<p><a class="back-link" href="{{ url_for('index') }}">&larr; All projects</a></p>
+<p class="eyebrow">Interactive project</p>
+<h1>{{ guide.get("title", project.name) }}</h1>
+<p>{{ guide.get("description", "") }}</p>
+<div class="actions"><a class="button" href="{{ github_url }}" target="_blank" rel="noopener">View folder on GitHub</a></div>
+<p class="muted">{{ guide.get("instructions", "") }}</p>
+<form method="post" class="mail-merge">
+  <div class="editor-grid">
+    <label>starting_letter.txt<textarea name="starting_letter" rows="12">{{ letter }}</textarea></label>
+    <label>invited_names.txt<textarea name="invited_names" rows="12">{{ names }}</textarea></label>
+  </div>
+  <p class="muted">Edit these temporary copies for this run. Your repository files are not changed.</p>
+  <button type="submit">Generate letters</button>
+</form>
+{% if letters %}
+<h2>Generated letters</h2>
+<div class="letters">{% for name, content in letters %}
+  <article><h3>letter_for_{{ name }}.txt</h3><pre>{{ content }}</pre></article>
+{% endfor %}</div>
+{% endif %}
+{% endblock %}
