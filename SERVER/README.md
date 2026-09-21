@@ -1,6 +1,6 @@
 # PythonAnywhere server
 
-This Flask app publishes each top-level folder next to `SERVER` as a project.
+This Flask app publishes each runnable top-level folder next to `SERVER` as a project.
 For example, a folder named `day-1` is available at `/day-1`; `Day 20 & 21`
 becomes `/day-20-21`. The folder list is discovered on each request, so new
 folders do not require a code change.
@@ -12,9 +12,17 @@ The original course archive is excluded by default because it contains lesson
 materials rather than portfolio projects. `EXCLUDED_PROJECTS` is provided for
 projects that are too small or unfinished.
 
-Desktop projects using turtle, Tkinter, or pygame are shown as source-only
-because PythonAnywhere cannot display their desktop windows. Console projects
-can be run from their project page with optional input, subject to the timeout.
+Desktop projects using turtle, Tkinter, or pygame are hidden because
+PythonAnywhere cannot display their desktop windows. Runnable console projects
+have project-specific instructions on their page. The process stays alive while
+you answer one prompt at a time, just like a terminal: the next real prompt is
+shown only after you submit the current response. Projects that do not need
+input run immediately and report the files they generated. They run with the
+project folder as the working directory, and requests are subject to the
+timeout.
+
+The current runnable projects are Days 16, 17, 24, 26, and 30. Their custom
+titles, descriptions, and examples are in `SERVER/config.py`.
 
 ## PythonAnywhere setup
 
