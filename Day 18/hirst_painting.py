@@ -1,5 +1,5 @@
 from turtle import Turtle, Screen, colormode
-from part1_136 import extract_colors
+from extract_colors import extract_colors
 
 color_list = extract_colors()
 colormode(255)
