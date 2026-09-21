@@ -7,6 +7,7 @@ import subprocess
 import sys
 import threading
 import time
+from pathlib import Path
 
 try:
     from .config import MAX_OUTPUT_CHARACTERS, RUN_TIMEOUT_SECONDS
@@ -16,11 +17,26 @@ except ImportError:
     from models import Project
 
 
+def python_executable() -> str:
+    """Find the interpreter for child projects, including PythonAnywhere WSGI."""
+    configured = os.environ.get("PROJECT_PYTHON_EXECUTABLE")
+    candidates = [
+        configured,
+        str(Path(sys.prefix) / "bin" / "python"),
+        str(Path(sys.prefix) / "Scripts" / "python.exe"),
+        sys.executable,
+    ]
+    for candidate in candidates:
+        if candidate and Path(candidate).is_file():
+            return candidate
+    return sys.executable
+
+
 class ProjectSession:
     def __init__(self, project: Project):
         self.project = project
         self.process = subprocess.Popen(
-            [sys.executable, str(project.entrypoint)],
+            [python_executable(), str(project.entrypoint)],
             cwd=project.path,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,

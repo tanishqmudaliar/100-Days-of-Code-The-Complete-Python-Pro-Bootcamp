@@ -50,3 +50,9 @@ keyboard-controlled GUI loops.
 
 The WSGI file adds `SERVER` to `sys.path`, so the app works without moving any
 project folders.
+
+The project runner resolves the active virtualenv's Python binary instead of
+using `sys.executable`. PythonAnywhere's WSGI process can expose uWSGI as
+`sys.executable`; launching a project through that path causes an "unable to
+load configuration" error. If a custom interpreter is required, set the
+`PROJECT_PYTHON_EXECUTABLE` environment variable to its full path.
