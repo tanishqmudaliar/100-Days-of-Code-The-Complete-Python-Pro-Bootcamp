@@ -11,6 +11,7 @@ import queue
 import threading
 import time
 import uuid
+from urllib.parse import quote
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -24,6 +25,7 @@ try:
         MAX_OUTPUT_CHARACTERS,
         PROJECT_GUIDES,
         RUN_TIMEOUT_SECONDS,
+        GITHUB_REPOSITORY_URL,
     )
 except ImportError:
     from .config import (
@@ -32,6 +34,7 @@ except ImportError:
         MAX_OUTPUT_CHARACTERS,
         PROJECT_GUIDES,
         RUN_TIMEOUT_SECONDS,
+        GITHUB_REPOSITORY_URL,
     )
 
 
@@ -228,6 +231,57 @@ def relative_file(project: Project, file: Path) -> str:
     return file.relative_to(project.path).as_posix()
 
 
+def github_folder_url(project: Project) -> str:
+    folder_path = quote(project.name, safe="")
+    return f"{GITHUB_REPOSITORY_URL}/tree/main/{folder_path}"
+
+
+def render_mail_merge(project: Project):
+    guide = project.guide or {}
+    letter_path = project.path / "Input" / "Letters" / "starting_letter.txt"
+    names_path = project.path / "Input" / "Names" / "invited_names.txt"
+    letter = letter_path.read_text(encoding="utf-8")
+    names = names_path.read_text(encoding="utf-8")
+    letters: list[tuple[str, str]] = []
+    if request.method == "POST":
+        letter = request.form.get("starting_letter", "")
+        names = request.form.get("invited_names", "")
+        letters = [
+            (name, letter.replace("[name]", name))
+            for name in names.splitlines()
+            if name.strip()
+        ]
+    editor = f"""
+      <form method="post" class="mail-merge">
+        <div class="editor-grid">
+          <label>starting_letter.txt
+            <textarea name="starting_letter" rows="12">{html.escape(letter)}</textarea>
+          </label>
+          <label>invited_names.txt
+            <textarea name="invited_names" rows="12">{html.escape(names)}</textarea>
+          </label>
+        </div>
+        <p class="muted">Edit these temporary copies for this run. Your repository files are not changed.</p>
+        <button type="submit">Generate letters</button>
+      </form>
+    """
+    result = ""
+    if letters:
+        result = "<h2>Generated letters</h2><div class=\"letters\">" + "".join(
+            f"<article><h3>letter_for_{html.escape(name)}.txt</h3><pre>{html.escape(content)}</pre></article>"
+            for name, content in letters
+        ) + "</div>"
+    body = (
+        f'<p><a class="back-link" href="{url_for("index")}">&larr; All projects</a></p>'
+        f'<p class="eyebrow">Interactive project</p><h1>{html.escape(guide.get("title", project.name))}</h1>'
+        f"<p>{html.escape(guide.get('description', ''))}</p>"
+        f'<div class="actions"><a class="button" href="{html.escape(github_folder_url(project))}" target="_blank" rel="noopener">View folder on GitHub</a></div>'
+        f"<p class=\"muted\">{html.escape(guide.get('instructions', ''))}</p>"
+        f"{editor}{result}"
+    )
+    return page(project.name, body)
+
+
 def run_project(project: Project, user_input: str) -> tuple[str, bool]:
     if not project.runnable or project.entrypoint is None:
         return project.unavailable_reason or "This project cannot be run here.", False
@@ -276,23 +330,32 @@ PAGE = """
     :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
     body { background: radial-gradient(circle at top, #172554, #0b1120 48%); color: #e5e7eb; margin: 0; min-height: 100vh; }
     main { max-width: 1050px; margin: auto; padding: 3rem 1.25rem 5rem; }
-    a { color: #bfdbfe; } .hero { margin-bottom: 2rem; } .eyebrow { color: #60a5fa; font-size: .8rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    a { color: #58a6ff; text-decoration: none; } a:hover { color: #79c0ff; text-decoration: none; }
+    a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid #58a6ff; outline-offset: 3px; }
+    .hero { margin-bottom: 2rem; } .eyebrow { color: #58a6ff; font-size: .8rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
     .grid { display: grid; gap: 1.2rem; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
-    article, .panel { background: rgba(31, 41, 55, .88); border: 1px solid #334155; border-radius: 1rem; box-shadow: 0 18px 45px rgba(0,0,0,.2); padding: 1.25rem; }
+    article, .panel { background: #161b22; border: 1px solid #30363d; border-radius: .75rem; box-shadow: 0 12px 30px rgba(0,0,0,.18); padding: 1.25rem; }
     .panel + .panel, .panel + pre, pre + .panel { margin-top: 1.5rem; }
-    article { transition: transform .15s, border-color .15s; } article:hover { border-color: #60a5fa; transform: translateY(-3px); }
-    button { background: linear-gradient(135deg, #2563eb, #4f46e5); border: 0; border-radius: .55rem; color: white; cursor: pointer; font-weight: 700; padding: .75rem 1rem; }
-    button:hover { filter: brightness(1.15); } textarea { box-sizing: border-box; min-height: 8rem; width: 100%; background: #020617; border: 1px solid #475569; border-radius: .55rem; color: #e5e7eb; padding: .8rem; resize: vertical; }
-    input { box-sizing: border-box; width: 100%; background: #020617; border: 1px solid #475569; border-radius: .55rem; color: #e5e7eb; margin-top: .5rem; padding: .8rem; }
-    .terminal { background: #020617; border: 1px solid #475569; border-radius: .8rem; box-shadow: 0 20px 50px rgba(0,0,0,.3); margin-top: 1.5rem; overflow: hidden; }
-    .terminal-bar { align-items: center; background: #1e293b; color: #94a3b8; display: flex; gap: .45rem; padding: .7rem 1rem; }
+    article { transition: transform .15s, border-color .15s, box-shadow .15s; } article:hover { border-color: #58a6ff; box-shadow: 0 16px 35px rgba(0,0,0,.28); transform: translateY(-3px); }
+    article h2 a { color: #f0f6fc; } article h2 a:hover { color: #58a6ff; }
+    button, .button { background: #238636; border: 1px solid rgba(240,246,252,.1); border-radius: .45rem; box-shadow: 0 1px 0 rgba(31,35,40,.1); color: #fff; cursor: pointer; display: inline-block; font-weight: 700; padding: .65rem 1rem; text-decoration: none; }
+    button:hover, .button:hover { background: #2ea043; color: #fff; text-decoration: none; }
+    textarea { box-sizing: border-box; min-height: 8rem; width: 100%; background: #0d1117; border: 1px solid #30363d; border-radius: .45rem; color: #e5e7eb; padding: .8rem; resize: vertical; }
+    .actions { margin: 1.25rem 0; } .button { background: #334155; border-radius: .55rem; color: #e2e8f0; display: inline-block; font-weight: 700; padding: .7rem 1rem; text-decoration: none; } .button:hover { background: #475569; }
+    .mail-merge { margin-top: 1.5rem; } .editor-grid { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); } label { color: #cbd5e1; font-weight: 700; } label textarea { display: block; margin-top: .5rem; }
+    .letters { display: grid; gap: 1rem; } .letters article { box-shadow: none; } .letters pre { margin: 0; }
+    input { box-sizing: border-box; width: 100%; background: #0d1117; border: 1px solid #30363d; border-radius: .45rem; color: #e5e7eb; margin-top: .5rem; padding: .8rem; }
+    .terminal { background: #0d1117; border: 1px solid #30363d; border-radius: .65rem; box-shadow: 0 20px 50px rgba(0,0,0,.3); margin-top: 1.5rem; overflow: hidden; }
+    .terminal-bar { align-items: center; background: #161b22; border-bottom: 1px solid #30363d; color: #8b949e; display: flex; gap: .45rem; padding: .7rem 1rem; }
     .terminal-dot { border-radius: 50%; height: .65rem; width: .65rem; } .red { background: #f87171; } .yellow { background: #facc15; } .green { background: #4ade80; }
     .terminal pre { border: 0; border-radius: 0; margin: 0; min-height: 12rem; padding: 1rem; }
     .terminal-form { border-top: 1px solid #1e293b; display: flex; gap: .7rem; padding: .8rem 1rem; }
-    .terminal-form input { background: #111827; border: 1px solid #475569; flex: 1; margin: 0; }
+    .terminal-form input { background: #0d1117; border: 1px solid #30363d; flex: 1; margin: 0; }
     .terminal-form button { padding: .65rem 1rem; }
     pre { background: #020617; border: 1px solid #1e293b; border-radius: .6rem; overflow-x: auto; padding: 1rem; white-space: pre-wrap; margin: 1.5rem 0; }
-    .muted { color: #94a3b8; } .success { color: #86efac; } .failure { color: #fca5a5; } .tag { background: #064e3b; border-radius: 999px; color: #a7f3d0; display: inline-block; font-size: .75rem; font-weight: 700; padding: .25rem .55rem; }
+    .muted { color: #8b949e; } .success { color: #7ee787; } .failure { color: #ff7b72; } .tag { background: #1f6feb33; border: 1px solid #1f6feb66; border-radius: 999px; color: #79c0ff; display: inline-block; font-size: .75rem; font-weight: 700; padding: .25rem .55rem; }
+    .back-link { background: #21262d; border: 1px solid #30363d; border-radius: .45rem; color: #c9d1d9; display: inline-block; font-size: .9rem; font-weight: 600; margin-bottom: 1.5rem; padding: .55rem .8rem; }
+    .back-link:hover { background: #30363d; color: #fff; }
     ol { padding-left: 1.25rem; } li { margin: .4rem 0; }
   </style>
 </head>
@@ -312,10 +375,10 @@ def index():
     for project in runnable_projects:
         guide = project.guide or {}
         cards.append(
-            f'<article><h2><a href="{url_for("project_page", slug=project.slug)}">'
-            f"{html.escape(guide.get('title', project.name))}</a></h2>"
+            f'<article><h2>{html.escape(guide.get("title", project.name))}</h2>'
             f'<p>{html.escape(guide.get("description", "Interactive Python project."))}</p>'
-            f'<span class="tag">Runnable locally</span></article>'
+            f'<span class="tag">Runnable locally</span>'
+            f'<p><a class="button" href="{url_for("project_page", slug=project.slug)}">Open project</a></p></article>'
         )
     body = (
         '<div class="hero"><p class="eyebrow">Python portfolio</p><h1>Projects you can try</h1><p class="muted">'
@@ -331,6 +394,8 @@ def project_page(slug: str):
     project = get_project(slug)
     if not project.runnable:
         abort(404)
+    if project.name == "Day 24":
+        return render_mail_merge(project)
     session_id = request.form.get("session_id") or request.args.get("session_id") or str(uuid.uuid4())
     project_session = SESSIONS.get(session_id)
     if project_session is None or project_session.project.slug != project.slug:
@@ -338,8 +403,6 @@ def project_page(slug: str):
         SESSIONS[session_id] = project_session
     answer = request.form.get("input", "") if request.method == "POST" else ""
     output, waiting = project_session.advance(answer)
-    files = "".join(f"<li>{html.escape(relative_file(project, file))}</li>" for file in project.files)
-    run_panel = ""
     guide = project.guide or {}
     terminal_form = ""
     if not waiting:
@@ -365,12 +428,13 @@ def project_page(slug: str):
       </div>
     """
     body = (
-        f'<p><a href="{url_for("index")}">&larr; All projects</a></p>'
+        f'<p><a class="back-link" href="{url_for("index")}">&larr; All projects</a></p>'
         f'<p class="eyebrow">Interactive project</p><h1>{html.escape(guide.get("title", project.name))}</h1>'
         f"<p>{html.escape(guide.get('description', ''))}</p>"
         f"<p class=\"muted\">Entry point: {html.escape(relative_file(project, project.entrypoint)) if project.entrypoint else 'none'}</p>"
+        f'<div class="actions"><a class="button" href="{html.escape(github_folder_url(project))}" target="_blank" rel="noopener">View folder on GitHub</a></div>'
         f'<p class="muted">{html.escape(guide.get("instructions", ""))}</p>'
-        f"{result}<details><summary>Project files</summary><ul>{files or '<li>No Python files</li>'}</ul></details>"
+        f"{result}"
     )
     return page(project.name, body)
 

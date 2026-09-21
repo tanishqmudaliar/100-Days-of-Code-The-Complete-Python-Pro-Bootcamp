@@ -14,6 +14,7 @@ EXCLUDED_PROJECTS = set()
 
 RUN_TIMEOUT_SECONDS = 8
 MAX_OUTPUT_CHARACTERS = 12_000
+GITHUB_REPOSITORY_URL = "https://github.com/tanishqmudaliar/100-Days-of-Code-The-Complete-Python-Pro-Bootcamp"
 
 # The text here is shown to visitors before they run a project. Add a new
 # entry when a newly discovered project needs custom instructions.
