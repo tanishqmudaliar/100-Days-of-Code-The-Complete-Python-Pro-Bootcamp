@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import Optional
 
 try:
-    from .config import EXCLUDED_FOLDERS, EXCLUDED_PROJECTS, PROJECT_GUIDES
+    from .config import EXCLUDED_FOLDERS, EXCLUDED_PROJECTS, PROJECT_GUIDES, GUI_PROJECTS
     from .models import Project
 except ImportError:
-    from config import EXCLUDED_FOLDERS, EXCLUDED_PROJECTS, PROJECT_GUIDES
+    from config import EXCLUDED_FOLDERS, EXCLUDED_PROJECTS, PROJECT_GUIDES, GUI_PROJECTS
     from models import Project
 
 SERVER_DIR = Path(__file__).resolve().parent
@@ -60,16 +60,24 @@ def discover_projects() -> list[Project]:
             slug = f"{slug}-{len(used_slugs) + 1}"
         used_slugs.add(slug)
         entrypoint = _entrypoint(folder, files)
-        unavailable_reason = _unsupported_reason(entrypoint)
+        if folder.name in GUI_PROJECTS:
+            kind, unavailable_reason, runnable = "gui", None, True
+            guide = GUI_PROJECTS[folder.name]
+        else:
+            kind = "console"
+            unavailable_reason = _unsupported_reason(entrypoint)
+            runnable = entrypoint is not None and unavailable_reason is None
+            guide = PROJECT_GUIDES.get(folder.name)
         projects.append(Project(
             name=folder.name,
             slug=slug,
             path=folder,
             entrypoint=entrypoint,
             files=tuple(files),
-            runnable=entrypoint is not None and unavailable_reason is None,
+            runnable=runnable,
             unavailable_reason=unavailable_reason,
-            guide=PROJECT_GUIDES.get(folder.name),
+            guide=guide,
+            kind=kind,
         ))
     return projects
 

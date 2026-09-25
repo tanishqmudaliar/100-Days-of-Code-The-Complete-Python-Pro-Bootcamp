@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import random
 import uuid
 from urllib.parse import quote
 
-from flask import Flask, abort, render_template, request
+from flask import Flask, abort, jsonify, render_template, request, send_from_directory
 
 try:
     from .config import GITHUB_REPOSITORY_URL
@@ -18,6 +19,35 @@ except ImportError:
 
 app = Flask(__name__)
 SESSIONS: dict[str, ProjectSession] = {}
+GUI_STATE: dict[str, dict] = {}
+
+
+def load_flashy_deck(project):
+    import pandas
+    try:
+        data = pandas.read_csv(project.path / "data" / "words_to_learn.csv")
+    except FileNotFoundError:
+        fr = pandas.read_csv(project.path / "data" / "french_words.csv").rename(columns={"French": "Word"})
+        fr["Language"] = "French"
+        hi = pandas.read_csv(project.path / "data" / "hindi_words.csv").rename(columns={"Hindi": "Word"})
+        hi["Language"] = "Hindi"
+        data = pandas.concat([fr, hi], ignore_index=True)
+    return data.to_dict(orient="records")
+
+
+def render_gui_project(project):
+    guide = project.guide or {}
+    session_id = request.args.get("session_id") or str(uuid.uuid4())
+    state = GUI_STATE.setdefault(session_id, {"deck": load_flashy_deck(project)})
+    card = random.choice(state["deck"])
+    state["current"] = card
+    return render_template(
+        guide["template"],
+        title=guide.get("title", project.name),
+        project=project,
+        card=card,
+        session_id=session_id
+    )
 
 
 def github_folder_url(project) -> str:
@@ -52,6 +82,8 @@ def project_page(slug: str):
     project = get_project(slug)
     if project is None or not project.runnable:
         abort(404)
+    if project.kind == "gui":
+        return render_gui_project(project)
     if project.name == "Day 24":
         return render_mail_merge(project)
     session_id = request.form.get("session_id") or request.args.get("session_id") or str(uuid.uuid4())
@@ -66,6 +98,44 @@ def project_page(slug: str):
         "project.html", title=project.name, project=project, guide=project.guide or {},
         github_url=github_folder_url(project), output=output, waiting=waiting, session_id=session_id,
     )
+
+@app.post("/<slug>/next")
+def gui_next(slug: str):
+    project = get_project(slug)
+    if project is None or project.kind != "gui":
+        abort(404)
+    payload = request.get_json(force=True)
+    session_id = payload.get("session_id") or str(uuid.uuid4())
+    state = GUI_STATE.setdefault(session_id, {"deck": load_flashy_deck(project)})
+    card = random.choice(state["deck"])
+    state["current"] = card
+    return jsonify(session_id=session_id, card=card)
+
+
+@app.post("/<slug>/known")
+def gui_known(slug: str):
+    project = get_project(slug)
+    if project is None or project.kind != "gui":
+        abort(404)
+    payload = request.get_json(force=True)
+    session_id = payload.get("session_id") or str(uuid.uuid4())
+    state = GUI_STATE.setdefault(session_id, {"deck": load_flashy_deck(project)})
+    current = state.get("current")
+    if current in state["deck"]:
+        state["deck"].remove(current)
+    if not state["deck"]:
+        state["deck"] = load_flashy_deck(project)
+    card = random.choice(state["deck"])
+    state["current"] = card
+    return jsonify(session_id=session_id, card=card)
+
+
+@app.get("/<slug>/assets/<path:filename>")
+def project_asset(slug: str, filename: str):
+    project = get_project(slug)
+    if project is None:
+        abort(404)
+    return send_from_directory(project.path / "images", filename)
 
 
 if __name__ == "__main__":

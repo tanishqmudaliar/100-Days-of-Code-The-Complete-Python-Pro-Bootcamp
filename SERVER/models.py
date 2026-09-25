@@ -15,3 +15,4 @@ class Project:
     runnable: bool
     unavailable_reason: Optional[str] = None
     guide: dict[str, str] | None = None
+    kind: str = "console"

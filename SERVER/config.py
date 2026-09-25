@@ -71,3 +71,11 @@ PROJECT_GUIDES = {
         "prompt_pattern": r"Enter a word: $",
     },
 }
+
+GUI_PROJECTS = {
+    "Day 31": {
+        "title": "Day 31",
+        "template": "gui/flashy.html",
+        "description": "Language flashcards — flips to the English side after 3 seconds, or mark a word known/unknown.",
+    },
+}

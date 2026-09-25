@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #B1DDC6; font-family: Arial, sans-serif; }
+    .window { padding: 50px; display: flex; flex-direction: column; align-items: center; gap: 30px; }
+    .card { position: relative; width: 800px; max-width: 92vw; aspect-ratio: 800 / 526; }
+    .card img { width: 100%; height: 100%; display: block; }
+    .card span { position: absolute; left: 50%; transform: translateX(-50%); text-align: center; }
+    .card-title { top: 27%; font-style: italic; font-size: 40px; }
+    .card-word { top: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 60px; }
+    .buttons { display: flex; gap: 60px; }
+    .buttons button { background: none; border: 0; cursor: pointer; padding: 0; }
+    .buttons img { width: 100px; height: 100px; }
+    .back { position: fixed; top: 1rem; left: 1rem; font-family: -apple-system, system-ui, sans-serif; color: #2f2013cc; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">&larr; All projects</a>
+  <div class="window">
+    <div class="card">
+      <img id="bg" src="{{ url_for('project_asset', slug=project.slug, filename='card_front.png') }}" alt="">
+      <span id="title" class="card-title" style="color:black">{{ card.Language }}</span>
+      <span id="word" class="card-word" style="color:black">{{ card.Word }}</span>
+    </div>
+    <div class="buttons">
+      <button type="button" onclick="nextCard()"><img src="{{ url_for('project_asset', slug=project.slug, filename='wrong.png') }}" alt="Don't know it"></button>
+      <button type="button" onclick="knownCard()"><img src="{{ url_for('project_asset', slug=project.slug, filename='right.png') }}" alt="Know it"></button>
+    </div>
+  </div>
+<script>
+const slug = {{ project.slug|tojson }};
+let sessionId = {{ session_id|tojson }};
+let flipTimer;
+
+function showFront(card) {
+  document.getElementById("bg").src = "{{ url_for('project_asset', slug=project.slug, filename='card_front.png') }}";
+  document.getElementById("title").textContent = card.Language;
+  document.getElementById("word").textContent = card.Word;
+  document.getElementById("title").style.color = document.getElementById("word").style.color = "black";
+  clearTimeout(flipTimer);
+  flipTimer = setTimeout(() => showBack(card), 3000);
+}
+function showBack(card) {
+  document.getElementById("bg").src = "{{ url_for('project_asset', slug=project.slug, filename='card_back.png') }}";
+  document.getElementById("title").textContent = "English";
+  document.getElementById("word").textContent = card.English;
+  document.getElementById("title").style.color = document.getElementById("word").style.color = "white";
+}
+async function nextCard() {
+  const res = await fetch(`/${slug}/next`, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ session_id: sessionId }) });
+  const data = await res.json();
+  sessionId = data.session_id;
+  showFront(data.card);
+}
+async function knownCard() {
+  const res = await fetch(`/${slug}/known`, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ session_id: sessionId }) });
+  const data = await res.json();
+  sessionId = data.session_id;
+  showFront(data.card);
+}
+flipTimer = setTimeout(() => showBack({{ card|tojson }}), 3000);
+</script>
+</body>
+</html>

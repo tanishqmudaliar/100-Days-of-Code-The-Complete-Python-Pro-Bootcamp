@@ -10,7 +10,7 @@
   <article>
     <h2>{{ project.guide.get("title", project.name) if project.guide else project.name }}</h2>
     <p>{{ project.guide.get("description", "A small Python program you can run right here.") if project.guide else "A small Python program you can run right here." }}</p>
-    <span class="tag">Live in browser</span>
+    <span class="tag">{{ "Interactive window" if project.kind == "gui" else "Live in browser" }}</span>
     <p><a class="button" href="{{ url_for('project_page', slug=project.slug) }}">Run it</a></p>
   </article>
 {% endfor %}
