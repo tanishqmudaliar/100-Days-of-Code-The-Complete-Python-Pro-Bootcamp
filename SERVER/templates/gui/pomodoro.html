@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f7f5dd; font-family: Courier, monospace; }
+    .window { padding: 50px 100px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    #title { font-size: 45px; font-weight: bold; color: #9bdeac; }
+    .canvas { position: relative; width: 200px; height: 224px; }
+    .canvas img { width: 100%; height: 100%; display: block; }
+    .canvas span { position: absolute; top: 58%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: bold; font-size: 35px; }
+    .buttons { display: flex; gap: 60px; align-items: center; }
+    .buttons button { font-family: Courier, monospace; padding: 6px 14px; cursor: pointer; }
+    .buttons button:disabled { opacity: .5; cursor: default; }
+    #checkmark { color: #9bdeac; font-size: 18px; min-height: 1.5rem; }
+    .back { position: fixed; top: 1rem; left: 1rem; font-family: -apple-system, system-ui, sans-serif; color: #2f2013cc; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">&larr; All projects</a>
+  <div class="window">
+    <div id="title">Timer</div>
+    <div class="canvas">
+      <img src="{{ url_for('project_asset', slug=project.slug, filename='tomato.png') }}" alt="">
+      <span id="timer-text">00:00</span>
+    </div>
+    <div class="buttons">
+      <button id="start" onclick="startTimer()">Start</button>
+      <button id="reset" onclick="resetTimer()">Reset</button>
+    </div>
+    <div id="checkmark"></div>
+  </div>
+<script>
+const WORK_MIN = 25, SHORT_MIN = 5, LONG_MIN = 20;
+const PINK = "#e2979c", RED = "#e7305b", GREEN = "#9bdeac";
+let reps = 0, timer = null;
+
+function resetTimer() {
+  if (timer) { clearTimeout(timer); timer = null; }
+  reps = 0;
+  document.getElementById("checkmark").textContent = "";
+  const title = document.getElementById("title");
+  title.textContent = "Timer"; title.style.color = GREEN;
+  document.getElementById("timer-text").textContent = "00:00";
+  document.getElementById("start").disabled = false;
+}
+function startTimer() {
+  if (timer) return;
+  reps += 1;
+  const title = document.getElementById("title");
+  document.getElementById("start").disabled = true;
+  if (reps % 8 === 0) { title.textContent = "Break"; title.style.color = RED; countdown(LONG_MIN * 60); }
+  else if (reps % 2 === 0) { title.textContent = "Break"; title.style.color = PINK; countdown(SHORT_MIN * 60); }
+  else { title.textContent = "Work"; title.style.color = GREEN; countdown(WORK_MIN * 60); }
+}
+function countdown(count) {
+  const m = String(Math.floor(count / 60)).padStart(2, "0");
+  const s = String(count % 60).padStart(2, "0");
+  document.getElementById("timer-text").textContent = `${m}:${s}`;
+  if (count > 0) { timer = setTimeout(() => countdown(count - 1), 1000); }
+  else {
+    timer = null;
+    document.getElementById("checkmark").textContent = "✔️".repeat(Math.floor(reps / 2));
+    startTimer();
+  }
+}
+</script>
+</body>
+</html>

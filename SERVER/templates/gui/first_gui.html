@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f0f0f0; font-family: "Times New Roman", serif; }
+    .window { display: grid; grid-template-columns: repeat(4, auto); gap: 20px; align-items: center; padding: 40px; }
+    .label { font-size: 24px; font-weight: bold; grid-column: 1; grid-row: 1; }
+    button { grid-row: 1; font-size: 14px; padding: 6px 14px; cursor: pointer; }
+    button.b1 { grid-column: 2; grid-row: 2; }
+    button.b2 { grid-column: 3; grid-row: 1; }
+    input { grid-column: 4; grid-row: 3; padding: 6px; font-size: 14px; }
+    .back { position: fixed; top: 1rem; left: 1rem; font-family: -apple-system, system-ui, sans-serif; color: #2f2013cc; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">&larr; All projects</a>
+  <div class="window">
+    <div id="label" class="label">I am a label</div>
+    <button class="b1" onclick="clicked()">Click Me</button>
+    <button class="b2" onclick="clicked()">Click Me</button>
+    <input id="entry" type="text">
+  </div>
+<script>
+function clicked() {
+  const v = document.getElementById("entry").value;
+  document.getElementById("label").textContent = v !== "" ? v : "No Input";
+}
+</script>
+</body>
+</html>

@@ -37,17 +37,14 @@ def load_flashy_deck(project):
 
 def render_gui_project(project):
     guide = project.guide or {}
-    session_id = request.args.get("session_id") or str(uuid.uuid4())
-    state = GUI_STATE.setdefault(session_id, {"deck": load_flashy_deck(project)})
-    card = random.choice(state["deck"])
-    state["current"] = card
-    return render_template(
-        guide["template"],
-        title=guide.get("title", project.name),
-        project=project,
-        card=card,
-        session_id=session_id
-    )
+    if project.name == "Day 31":
+        session_id = request.args.get("session_id") or str(uuid.uuid4())
+        state = GUI_STATE.setdefault(session_id, {"deck": load_flashy_deck(project)})
+        card = random.choice(state["deck"])
+        state["current"] = card
+        return render_template(guide["template"], title=guide.get("title", project.name),
+                               project=project, card=card, session_id=session_id)
+    return render_template(guide["template"], title=guide.get("title", project.name), project=project)
 
 
 def github_folder_url(project) -> str:
@@ -66,7 +63,7 @@ def render_mail_merge(project):
         names = request.form.get("invited_names", "")
         letters = [(name, letter.replace("[name]", name)) for name in names.splitlines() if name.strip()]
     return render_template(
-        "mail_merge.html", title=project.name, project=project, guide=guide,
+        "mail_merge.html", title=guide.get("title", project.name), project=project, guide=guide,
         github_url=github_folder_url(project), letter=letter, names=names, letters=letters,
     )
 
@@ -95,7 +92,7 @@ def project_page(slug: str):
     if not waiting:
         SESSIONS.pop(session_id, None)
     return render_template(
-        "project.html", title=project.name, project=project, guide=project.guide or {},
+        "project.html", title=(project.guide or {}).get("title", project.name), project=project, guide=project.guide or {},
         github_url=github_folder_url(project), output=output, waiting=waiting, session_id=session_id,
     )
 
@@ -135,7 +132,7 @@ def project_asset(slug: str, filename: str):
     project = get_project(slug)
     if project is None:
         abort(404)
-    return send_from_directory(project.path / "images", filename)
+    return send_from_directory(project.path, filename)
 
 
 if __name__ == "__main__":

@@ -73,8 +73,23 @@ PROJECT_GUIDES = {
 }
 
 GUI_PROJECTS = {
+    "Day 27": {
+        "title": "My first GUI Program",
+        "template": "gui/first_gui.html",
+        "description": "Type into the entry field, click either button, and the label updates to match.",
+    },
+    "Day 28": {
+        "title": "Pomodoro",
+        "template": "gui/pomodoro.html",
+        "description": "A real 25/5/20-minute Pomodoro timer that cycles work and break sessions automatically.",
+    },
+    "Day 29": {
+        "title": "Password Manager",
+        "template": "gui/password_manager.html",
+        "description": "Generates a random password and copies it to your clipboard. Nothing entered here is saved.",
+    },
     "Day 31": {
-        "title": "Day 31",
+        "title": "Flashy",
         "template": "gui/flashy.html",
         "description": "Language flashcards — flips to the English side after 3 seconds, or mark a word known/unknown.",
     },

@@ -22,13 +22,13 @@
   <a class="back" href="/">&larr; All projects</a>
   <div class="window">
     <div class="card">
-      <img id="bg" src="{{ url_for('project_asset', slug=project.slug, filename='card_front.png') }}" alt="">
+      <img id="bg" src="{{ url_for('project_asset', slug=project.slug, filename='images/card_front.png') }}" alt="">
       <span id="title" class="card-title" style="color:black">{{ card.Language }}</span>
       <span id="word" class="card-word" style="color:black">{{ card.Word }}</span>
     </div>
     <div class="buttons">
-      <button type="button" onclick="nextCard()"><img src="{{ url_for('project_asset', slug=project.slug, filename='wrong.png') }}" alt="Don't know it"></button>
-      <button type="button" onclick="knownCard()"><img src="{{ url_for('project_asset', slug=project.slug, filename='right.png') }}" alt="Know it"></button>
+      <button type="button" onclick="nextCard()"><img src="{{ url_for('project_asset', slug=project.slug, filename='images/wrong.png') }}" alt="Don't know it"></button>
+      <button type="button" onclick="knownCard()"><img src="{{ url_for('project_asset', slug=project.slug, filename='images/right.png') }}" alt="Know it"></button>
     </div>
   </div>
 <script>
@@ -37,7 +37,7 @@ let sessionId = {{ session_id|tojson }};
 let flipTimer;
 
 function showFront(card) {
-  document.getElementById("bg").src = "{{ url_for('project_asset', slug=project.slug, filename='card_front.png') }}";
+  document.getElementById("bg").src = "{{ url_for('project_asset', slug=project.slug, filename='images/card_front.png') }}";
   document.getElementById("title").textContent = card.Language;
   document.getElementById("word").textContent = card.Word;
   document.getElementById("title").style.color = document.getElementById("word").style.color = "black";
@@ -45,7 +45,7 @@ function showFront(card) {
   flipTimer = setTimeout(() => showBack(card), 3000);
 }
 function showBack(card) {
-  document.getElementById("bg").src = "{{ url_for('project_asset', slug=project.slug, filename='card_back.png') }}";
+  document.getElementById("bg").src = "{{ url_for('project_asset', slug=project.slug, filename='images/card_back.png') }}";
   document.getElementById("title").textContent = "English";
   document.getElementById("word").textContent = card.English;
   document.getElementById("title").style.color = document.getElementById("word").style.color = "white";
