@@ -43,7 +43,7 @@ def render_mail_merge(project):
 
 @app.get("/")
 def index():
-    return render_template("index.html", title="Python projects",
+    return render_template("index.html", title="Live Python Demos",
                            projects=[project for project in discover_projects() if project.runnable])
 
 

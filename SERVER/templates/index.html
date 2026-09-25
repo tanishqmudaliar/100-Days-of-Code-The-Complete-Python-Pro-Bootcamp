@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="hero">
-  <p class="eyebrow">Python portfolio</p>
-  <h1>Projects you can try</h1>
-  <p class="muted">These projects run from the browser using the same Python files in this repository. Desktop-only projects are intentionally hidden.</p>
+  <p class="eyebrow">100 Days of Code</p>
+  <h1>Pick a project, run it live</h1>
+  <p class="muted">Every project below runs straight from this repo's source — type an answer, watch it respond, no setup required.</p>
 </div>
 <div class="grid">
 {% for project in projects %}
   <article>
     <h2>{{ project.guide.get("title", project.name) if project.guide else project.name }}</h2>
-    <p>{{ project.guide.get("description", "Interactive Python project.") if project.guide else "Interactive Python project." }}</p>
-    <span class="tag">Runnable locally</span>
-    <p><a class="button" href="{{ url_for('project_page', slug=project.slug) }}">Open project</a></p>
+    <p>{{ project.guide.get("description", "A small Python program you can run right here.") if project.guide else "A small Python program you can run right here." }}</p>
+    <span class="tag">Live in browser</span>
+    <p><a class="button" href="{{ url_for('project_page', slug=project.slug) }}">Run it</a></p>
   </article>
 {% endfor %}
 </div>
